@@ -1,18 +1,21 @@
 name: Deploy to S3
-on: push
-jobs:
-    deploy:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-            - name: "Configure AWS credentials"
-              uses: aws-actions/configure-aws-credentials@v6
-              with:
-                AWS_S3_BUCKET: ${{ secrets.S3_BUCKET }}
-                AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
-                AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
-                AWS_REGION: ${{ secrets.AWS_REGION }}
+on:
+  push:
+    branches: [main]
 
-            - name: "Deploy to S3"
-              run: aws s3 sync . s3://${{ secrets.S3_BUCKET }} --delete
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: aws s3 sync . s3://${{ secrets.S3_BUCKET }} --delete --exclude ".git/*" --exclude ".github/*"
